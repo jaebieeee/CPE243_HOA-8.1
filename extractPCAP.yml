@@ -1,0 +1,28 @@
+- hosts: all
+  gather_facts: true
+  become: yes
+  become_user: root
+
+  tasks:
+    - name: Collect PCAP from Control Node
+      fetch:
+        src: /home/jai/Collected.pcap
+        dest: /home/jai/CPE243_HOA-8.1/InputPCAP/
+        flat: yes
+
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Extract executable PCAP from Input Folder
+      command: "tcpflow -r /home/jai/CPE243_HOA-8.1/InputPCAP/Collected.pcap -o /home/jai/CPE243_HOA-8.1/CapturedPCAP/"
+      args:
+        creates: /home/jai/CPE243_HOA-8.1/CapturedPCAP/Collectedpcap.exe
+
+    - name: Output of PCAP file
+      command: "cat /home/jai/CPE243_HOA-8.1/CapturedPCAP/report.xml"
+      register: cat_output
+      changed_when: false
+
+    - debug:
+        var: cat_output.stdout_lines
